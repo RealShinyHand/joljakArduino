@@ -10,8 +10,6 @@
 #define LED_PIN 5
 const int SOUND_SENSOR = A0; //사운드 센서 입력핀 A0, 출력핀 부족 3번핀 출력으로
 #define DHTTYPE DHT22 //DHT22 온습도 센서 사용
-#define STEPS 2038 // 모터 1회전당 스텝수
-
 // 모터의 핀은 8,9,10,11
 
 // 모터의 스텝 수 2048=1바퀴, 1024=반바퀴
@@ -34,8 +32,6 @@ int maxSoundValue=0;
 int is_move=0; // 모터 움직이고 있나요?
 int is_ledOn = 0; //led 켜져있냐?
 int is_cry=0; // 아기가 울고 있는지 아닌지?
-int move_motor=0; // 시리얼 통신으로 받아올 명령
-bool kill_flag=false; // Thread 종료할지 아닐지?
 unsigned long loopTime = 0;
 unsigned long addTime=0;
 
@@ -59,12 +55,14 @@ void setup() {
   // Create 5 threads and add them to the main ThreadList:
   dht.begin();
   pinMode(3,OUTPUT);
+  pinMode(5,OUTPUT);
   digitalWrite(3,HIGH);
   Serial.begin(9600); //통신속도 9600으로 통신 시작
   Serial.println("# arduino DHT22 test!"); //온습도센서 test
   Serial.println("# arduino Sound Sensor test!"); //사운드 센서 test
-  myStepper.setSpeed(15); // 15RPM구동
+  myStepper.setSpeed(5); // 15RPM구동
   lcd.init();
+  lcd.clear();
 }
 
 void loop() {
@@ -81,20 +79,22 @@ void loop() {
   // 온습도 센서 부분
     float humidity=dht.readHumidity(); //습도값을 humidity에 저장
     float temparature=dht.readTemperature(); //온도값을 temparature에 저장
-
+    printLED(temparature,humidity);
     if(isnan(humidity) || isnan(temparature)){
       Serial.println("# arduino DHT22 ERROR");
     }
     Serial.println(temparature+String(" ")+humidity+String(" ")+is_move+String(" ")+maxSoundValue+String(" ")+is_ledOn);
     maxSoundValue=0;
+    
     if(is_move != 0){
-      myStepper.step(steps);
+      myStepper.step(2048);
     }
     if(is_ledOn != 0){
       digitalWrite(LED_PIN,HIGH);
     }else{
       digitalWrite(LED_PIN,LOW);
     }
+    
   }
   
   loopTime = loopTime + millis() - addTime;
@@ -113,19 +113,14 @@ void loop() {
 void printLED(int temparature,int humidity){
     lcd.backlight();	//	lcd 백라이트 on
 	lcd.display();		//	lcd 내용 표시
-
+  // LCD의 모든 내용을 삭제
+  lcd.clear();
 	//0번째 줄 0번째 셀부터 입력하게 함
 	lcd.setCursor(0, 0);
-	lcd.print("TEMP:     ");
-	lcd.print(temprature);
+	lcd.print(String("TEMP:     ")+temparature);
 
 	//1번째 줄 0번째 셀부터 입력하게 함
 	lcd.setCursor(0, 1);
-	lcd.print("HUMIDITY: ");
+	lcd.print(String("HUMIDITY: ") + humidity);
 	lcd.print(humidity);
-
-	// 1초간 대기
-	delay(1000);
-	// LCD의 모든 내용을 삭제
-	lcd.clear();
 }
