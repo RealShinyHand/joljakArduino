@@ -110,7 +110,7 @@ void loop() {
   }
 }
 
-void printLED(int temparature,int humidity){
+void printLED(float temparature,float humidity){
     lcd.backlight();	//	lcd 백라이트 on
 	lcd.display();		//	lcd 내용 표시
   // LCD의 모든 내용을 삭제
