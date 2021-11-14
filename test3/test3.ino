@@ -60,9 +60,15 @@ void setup() {
   Serial.begin(9600); //통신속도 9600으로 통신 시작
   Serial.println("# arduino DHT22 test!"); //온습도센서 test
   Serial.println("# arduino Sound Sensor test!"); //사운드 센서 test
-  myStepper.setSpeed(5); // 15RPM구동
+  myStepper.setSpeed(7); // 15RPM구동
   lcd.init();
   lcd.clear();
+  lcd.display();
+  lcd.setCursor(0,0);
+  lcd.print("qwert");
+  
+  delay(1000);
+  
 }
 
 void loop() {
@@ -84,8 +90,9 @@ void loop() {
       Serial.println("# arduino DHT22 ERROR");
     }
     Serial.println(temparature+String(" ")+humidity+String(" ")+is_move+String(" ")+maxSoundValue+String(" ")+is_ledOn);
-    maxSoundValue=0;
-    
+    maxSoundValue=0; 
+  }
+
     if(is_move != 0){
       myStepper.step(2048);
     }
@@ -94,13 +101,11 @@ void loop() {
     }else{
       digitalWrite(LED_PIN,LOW);
     }
-    
-  }
   
   loopTime = loopTime + millis() - addTime;
   
   if(Serial.available() > 0){
-    //raspberry pi send format : b"1010" == b"(모터)(led)(\n)"
+    //raspberry pi send format : b"11" == b"(모터)(led)(\n)"
     String msg = Serial.readStringUntil('\n');
     Serial.println("# "+msg);
     is_move = msg.charAt(0);
@@ -111,8 +116,7 @@ void loop() {
 }
 
 void printLED(float temparature,float humidity){
-    lcd.backlight();	//	lcd 백라이트 on
-	lcd.display();		//	lcd 내용 표시
+  lcd.backlight();	//	lcd 백라이트 on
   // LCD의 모든 내용을 삭제
   lcd.clear();
 	//0번째 줄 0번째 셀부터 입력하게 함
